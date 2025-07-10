@@ -14,22 +14,24 @@ import pandas as pd
 from sklearn.model_selection import train_test_split
 from sklearn.linear_model import LogisticRegression
 from sklearn.metrics import accuracy_score
+from sklearn.metrics import confusion_matrix, ConfusionMatrixDisplay, classification_report, roc_curve, auc
+import matplotlib.pyplot as plt
 
 # Loading the dataset to a Pandas DataFrame
 
-credit_card_data = pd.read_csv('creditcard.csv')
+credit_card_data = pd.read_csv('/content/creditcard.csv')
 
 # Printing the first 5 rows of the datasets
 
-# credit_card_data.head()
+credit_card_data.head()
 
 # Printing the last 5 rows of the datasets
 
-# credit_card_data.tail()
+credit_card_data.tail()
 
 # Getting the Dataset Info
 
-# credit_card_data.info()
+credit_card_data.info()
 
 # Checking for the distribution of legit transactions & fraudulent transactions
 
@@ -128,8 +130,9 @@ Y = new_data['Class']
 print(X.shape)
 print(Y.shape)
 
-# print(X) # Uncommenting this line will print the entire feature set, which can be very large
-# print(Y) # Uncommenting this line will print the entire target set, which is usually just 0s and 1s
+print(X)
+
+print(Y)
 
 """Split the data into Training Data and Test Data"""
 
@@ -203,7 +206,10 @@ print(Y.shape, Y_train.shape, Y_test.shape)
 """
 
 model = LogisticRegression()
-model = LogisticRegression(max_iter=10000)  # Default is 100
+
+from sklearn.linear_model import LogisticRegression
+
+model = LogisticRegression(max_iter=6000)  # Default is 100
 model.fit(X_train, Y_train)
 
 """**Model Training**
@@ -232,4 +238,44 @@ X_test_prediction = model.predict(X_test)
 test_data_accuracy = accuracy_score(X_test_prediction, Y_test)
 
 print('Accuracy score on Test Data : ', test_data_accuracy)
+
+# 1CONFUSION MATRIX
+"""
+The confusion matrix helps visualize how many predictions were:
+- Correctly predicted as Legit (True Negatives)
+- Correctly predicted as Fraud (True Positives)
+- Incorrectly predicted as Fraud (False Positives)
+- Incorrectly predicted as Legit (False Negatives)
+
+This is especially useful for imbalanced datasets like fraud detection.
+"""
+cm = confusion_matrix(Y_test, X_test_prediction)
+disp = ConfusionMatrixDisplay(confusion_matrix=cm, display_labels=["Legit", "Fraud"])
+disp.plot(cmap='Blues')
+plt.title("Confusion Matrix")
+plt.show()
+
+# CLASSIFICATION REPORT
+"""
+The classification report includes:
+- Precision: Of all transactions predicted as fraud, how many were actually fraud?
+- Recall: Of all actual fraud transactions, how many were correctly identified?
+- F1-score: Harmonic mean of precision and recall (balances both)
+This is more informative than accuracy when data is imbalanced.
+"""
+print("Classification Report:")
+print(classification_report(Y_test, X_test_prediction, target_names=["Legit", "Fraud"]))
+
+# CLASS DISTRIBUTION BAR CHART
+"""
+Visualizes how imbalanced the original dataset was.
+This explains why we performed under-sampling.
+"""
+counts = credit_card_data['Class'].value_counts()
+plt.figure(figsize=(6,4))
+plt.bar(['Legit', 'Fraud'], counts, color=['green', 'red'])
+plt.title("Original Transaction Class Distribution")
+plt.ylabel("Count")
+plt.grid(axis='y')
+plt.show()
 
